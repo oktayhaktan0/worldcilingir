@@ -11,6 +11,8 @@ export const metadata = {
     },
 };
 
+export const revalidate = 0;
+
 export default async function BlogIndex() {
     const posts = await getAllPosts();
 

@@ -3,6 +3,8 @@ import { getAllPosts } from '@/lib/blog';
 import Header from '@/components/Header';
 import AutoBlogButton from './AutoBlogButton';
 
+export const revalidate = 0;
+
 export default async function AdminDashboard() {
     const posts = await getAllPosts();
 
