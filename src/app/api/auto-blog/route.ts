@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import fs from 'fs';
 import path from 'path';
 import fetch from 'node-fetch';
+import { sql } from '@vercel/postgres';
+import { initTable } from '@/lib/db';
 
 function slugify(text: string) {
     const trMap: { [key: string]: string } = {
@@ -24,27 +25,12 @@ function slugify(text: string) {
         .replace(/-+$/, '');
 }
 
-async function downloadUnsplashImage(keyword: string, slug: string) {
+async function getUnsplashImageUrl(keyword: string) {
     try {
         const query = encodeURIComponent(`${keyword} locksmith security`);
-        
-        const dynamicUrl = `https://images.unsplash.com/photo-1582139329536-e7284fece509?q=80&w=1200&auto=format&fit=crop`;
-        
-        const response = await fetch(dynamicUrl);
-        const buffer = await response.buffer();
-        
-        const publicDir = path.join(process.cwd(), 'public/blog');
-        if (!fs.existsSync(publicDir)) {
-            fs.mkdirSync(publicDir, { recursive: true });
-        }
-        
-        const fileName = `${slug}.jpg`;
-        const filePath = path.join(publicDir, fileName);
-        fs.writeFileSync(filePath, buffer);
-        
-        return `/blog/${fileName}`;
+        return `https://images.unsplash.com/photo-1582139329536-e7284fece509?q=80&w=1200&auto=format&fit=crop`;
     } catch (error) {
-        console.error("Image download error:", error);
+        console.error("Image URL error:", error);
         return null;
     }
 }
@@ -100,27 +86,23 @@ Cevabını Markdown kod bloğu (\\\`\\\`\\\`json) İÇİNDE YAZMA, SADECE JSON F
 
         const { title, excerpt, content, imageKeyword } = data;
         const slug = slugify(title);
-        const date = new Date().toISOString().split('T')[0];
+        
+        // Use remote image URL instead of local path
+        const imageUrl = await getUnsplashImageUrl(imageKeyword || 'locksmith');
 
-        const imagePath = await downloadUnsplashImage(imageKeyword || 'locksmith', slug);
+        // Ensure table exists
+        await initTable();
 
-        const fileContent = `---
-title: "${title}"
-excerpt: "${excerpt}"
-date: "${date}"
-author: "World Çilingir"
-${imagePath ? `image: "${imagePath}"` : ''}
----
-
-${content}`;
-
-        const contentDirectory = path.join(process.cwd(), 'src/content/blog');
-        if (!fs.existsSync(contentDirectory)) {
-            fs.mkdirSync(contentDirectory, { recursive: true });
-        }
-
-        const filePath = path.join(contentDirectory, `${slug}.mdx`);
-        fs.writeFileSync(filePath, fileContent, 'utf8');
+        // Save to Database
+        await sql`
+            INSERT INTO blog_posts (slug, title, excerpt, content, author, image_url)
+            VALUES (${slug}, ${title}, ${excerpt}, ${content}, 'World Çilingir', ${imageUrl})
+            ON CONFLICT (slug) DO UPDATE SET
+                title = ${title},
+                excerpt = ${excerpt},
+                content = ${content},
+                image_url = ${imageUrl}
+        `;
 
         return { success: true, slug };
     } catch (error) {

@@ -11,8 +11,8 @@ export const metadata = {
     },
 };
 
-export default function BlogIndex() {
-    const posts = getAllPosts();
+export default async function BlogIndex() {
+    const posts = await getAllPosts();
 
     return (
         <main style={{ minHeight: '100vh', background: 'var(--bg-secondary)' }}>

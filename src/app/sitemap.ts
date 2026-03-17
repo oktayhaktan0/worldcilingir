@@ -1,8 +1,9 @@
 import { MetadataRoute } from 'next';
 import { districts } from '@/data/districts';
 import { siteConfig } from '@/config/site';
+import { getAllPosts } from '@/lib/blog';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = siteConfig.url;
 
     const staticPages = [
@@ -28,16 +29,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: 0.9,
     }));
 
-    const blogPosts = [
-        'kapi-kilidi-nasil-degistirilir',
-        'hirsiga-karsi-onlemler',
-        'oto-cilingir-cagirirken-dikkat',
-    ].map((slug) => ({
-        url: `${baseUrl}/blog/${slug}`,
-        lastModified: new Date(),
+    const posts = await getAllPosts();
+    const blogPages = posts.map((post) => ({
+        url: `${baseUrl}/blog/${post.slug}`,
+        lastModified: new Date(post.frontmatter.date),
         changeFrequency: 'monthly' as const,
         priority: 0.7,
     }));
 
-    return [...staticPages, ...districtPages, ...blogPosts];
+    return [...staticPages, ...districtPages, ...blogPages];
 }

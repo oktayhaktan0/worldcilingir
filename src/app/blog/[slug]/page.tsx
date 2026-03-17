@@ -1,4 +1,4 @@
-import { getPostBySlug, getPostSlugs } from '@/lib/blog';
+import { getPostBySlugAnywhere, getAllPosts } from '@/lib/blog';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import Header from '@/components/Header';
 import { notFound } from 'next/navigation';
@@ -10,43 +10,41 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-    const slugs = getPostSlugs();
-    return slugs.map((slug) => ({
-        slug: slug.replace(/\.mdx$/, ''),
+    const posts = await getAllPosts();
+    return posts.map((post) => ({
+        slug: post.slug,
     }));
 }
 
 export async function generateMetadata({ params }: Props) {
     const { slug } = await params;
-    try {
-        const post = getPostBySlug(slug);
-        return {
-            title: `${post.frontmatter.title} - World Çilingir Blog`,
-            description: post.frontmatter.excerpt,
-            alternates: {
-                canonical: `${siteConfig.url}/blog/${slug}`,
-            },
-            openGraph: {
-                title: post.frontmatter.title,
-                description: post.frontmatter.excerpt,
-                type: 'article',
-                publishedTime: post.frontmatter.date,
-                authors: [post.frontmatter.author || 'World Çilingir'],
-            },
-        };
-    } catch (e) {
+    const post = await getPostBySlugAnywhere(slug);
+    if (!post) {
         return {
             title: 'Blog Yazısı Bulunamadı',
         };
     }
+    return {
+        title: `${post.frontmatter.title} - World Çilingir Blog`,
+        description: post.frontmatter.excerpt,
+        alternates: {
+            canonical: `${siteConfig.url}/blog/${slug}`,
+        },
+        openGraph: {
+            title: post.frontmatter.title,
+            description: post.frontmatter.excerpt,
+            type: 'article',
+            publishedTime: post.frontmatter.date,
+            authors: [post.frontmatter.author || 'World Çilingir'],
+        },
+    };
 }
 
 export default async function BlogPost({ params }: Props) {
     const { slug } = await params;
-    let post;
-    try {
-        post = getPostBySlug(slug);
-    } catch (e) {
+    const post = await getPostBySlugAnywhere(slug);
+    
+    if (!post) {
         notFound();
     }
 
