@@ -10,9 +10,9 @@ function slugify(text: string) {
         'ç': 'c', 'Ç': 'c', 'ğ': 'g', 'Ğ': 'g', 'ş': 's', 'Ş': 's',
         'ü': 'u', 'Ü': 'u', 'ı': 'i', 'İ': 'i', 'ö': 'o', 'Ö': 'o'
     };
-    
+
     let result = text.toString().toLowerCase();
-    
+
     Object.keys(trMap).forEach(key => {
         result = result.replace(new RegExp(key, 'g'), trMap[key]);
     });
@@ -43,7 +43,7 @@ async function handleBlogGeneration() {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const topics = [
             "İzmir acil çilingir hizmetinin önemi",
@@ -86,7 +86,7 @@ Cevabını Markdown kod bloğu (\\\`\\\`\\\`json) İÇİNDE YAZMA, SADECE JSON F
 
         const { title, excerpt, content, imageKeyword } = data;
         const slug = slugify(title);
-        
+
         // Use remote image URL instead of local path
         const imageUrl = await getUnsplashImageUrl(imageKeyword || 'locksmith');
 
