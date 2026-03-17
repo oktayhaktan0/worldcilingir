@@ -6,12 +6,21 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "start:host": "node server.js",
+    "lint": "eslint",
+    "prepare-deploy": "rm -rf .next && npm run build"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@types/node-fetch": "^2.6.13",
+    "easymde": "^2.20.0",
+    "gray-matter": "^4.0.3",
     "next": "16.1.6",
+    "next-mdx-remote": "^5.0.0",
+    "node-fetch": "^2.7.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-simplemde-editor": "^5.2.0"
   },
   "devDependencies": {
     "@types/node": "^20",
