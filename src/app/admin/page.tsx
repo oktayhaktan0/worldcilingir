@@ -3,8 +3,8 @@ import { getAllPosts } from '@/lib/blog';
 import Header from '@/components/Header';
 import AutoBlogButton from './AutoBlogButton';
 
-export default function AdminDashboard() {
-    const posts = getAllPosts();
+export default async function AdminDashboard() {
+    const posts = await getAllPosts();
 
     return (
         <main style={{ minHeight: '100vh', background: 'var(--bg-secondary)', paddingTop: '100px' }}>
